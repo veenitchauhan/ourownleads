@@ -51,6 +51,14 @@ export default function SuperadminDashboard({ users = [], metrics, flash }: Prop
     const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
     const [passwordError, setPasswordError] = useState<string | null>(null);
     const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
+    const [isSyncingAll, setIsSyncingAll] = useState(false);
+
+    const handleSyncAll = () => {
+        setIsSyncingAll(true);
+        router.post('/superadmin/sync-leads', {}, {
+            onFinish: () => setIsSyncingAll(false),
+        });
+    };
 
     // Filter users
     const filteredUsers = useMemo(() => {
@@ -142,7 +150,17 @@ export default function SuperadminDashboard({ users = [], metrics, flash }: Prop
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2.5">
+                        <button
+                            onClick={handleSyncAll}
+                            disabled={isSyncingAll}
+                            className="inline-flex items-center gap-1.5 text-xs text-slate-200 hover:text-white font-bold px-3 py-1.5 rounded-xl border border-slate-700 bg-slate-800/90 hover:bg-slate-700 transition cursor-pointer disabled:opacity-50 shadow-xs"
+                            title="Refresh live lead counts for all campaigns from Google Sheets"
+                        >
+                            <RefreshCw className={`w-3.5 h-3.5 text-rose-400 ${isSyncingAll ? 'animate-spin' : ''}`} />
+                            <span>{isSyncingAll ? 'Syncing...' : 'Sync Live Leads'}</span>
+                        </button>
+
                         <a
                             href="/"
                             target="_blank"

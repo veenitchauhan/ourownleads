@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Superadmin;
 use App\Http\Controllers\Controller;
 use App\Models\LeadSheet;
 use App\Models\User;
+use App\Services\GoogleSheetService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,8 +15,23 @@ use Inertia\Response;
 
 class SuperadminController extends Controller
 {
+    protected GoogleSheetService $sheetService;
+
+    public function __construct(GoogleSheetService $sheetService)
+    {
+        $this->sheetService = $sheetService;
+    }
+
     public function index(Request $request): Response
     {
+        // Auto-sync any sheet that currently has 0 leads count so superadmin always sees fresh numbers
+        $uncountedSheets = LeadSheet::where('total_leads_count', 0)->get();
+        foreach ($uncountedSheets as $sheet) {
+            try {
+                $this->sheetService->getEnrichedLeads($sheet);
+            } catch (\Exception $e) {}
+        }
+
         $users = User::with(['leadSheets', 'currentTeam', 'ownedTeams'])
             ->latest()
             ->get()
@@ -102,5 +118,19 @@ class SuperadminController extends Controller
 
         return redirect()->route('superadmin.index')
             ->with('success', 'Exited impersonation. Welcome back to Superadmin Portal.');
+    }
+
+    public function syncAllLeads(Request $request): RedirectResponse
+    {
+        $sheets = LeadSheet::all();
+        $synced = 0;
+        foreach ($sheets as $sheet) {
+            try {
+                $this->sheetService->getEnrichedLeads($sheet);
+                $synced++;
+            } catch (\Exception $e) {}
+        }
+
+        return back()->with('success', "Live lead counts refreshed for {$synced} campaign" . ($synced !== 1 ? 's' : '') . ".");
     }
 }

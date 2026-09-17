@@ -44,6 +44,7 @@ Route::prefix('superadmin')->name('superadmin.')->group(function () {
 
     Route::middleware([\App\Http\Middleware\EnsureSuperadmin::class])->group(function () {
         Route::get('/', [\App\Http\Controllers\Superadmin\SuperadminController::class, 'index'])->name('index');
+        Route::post('sync-leads', [\App\Http\Controllers\Superadmin\SuperadminController::class, 'syncAllLeads'])->name('sync-leads');
         Route::post('users/{user}/password', [\App\Http\Controllers\Superadmin\SuperadminController::class, 'setPassword'])->name('users.password');
         Route::post('users/{user}/impersonate', [\App\Http\Controllers\Superadmin\SuperadminController::class, 'impersonate'])->name('users.impersonate');
     });

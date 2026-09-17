@@ -57,8 +57,13 @@ class SheetController extends Controller
             'sheet_id' => $test['sheet_id'],
             'gid' => $test['gid'] ?? '0',
             'refresh_interval' => $request->input('refresh_interval', 15),
+            'total_leads_count' => $test['total_rows'] ?? 0,
             'is_active' => true,
         ]);
+
+        try {
+            $this->sheetService->getEnrichedLeads($sheet);
+        } catch (\Exception $e) {}
 
         $routeParams = ['sheet_id' => $sheet->id];
         if ($team) {

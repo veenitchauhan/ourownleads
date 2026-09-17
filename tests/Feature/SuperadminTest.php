@@ -114,3 +114,23 @@ test('superadmin can log out', function () {
     $response->assertRedirect(route('superadmin.login'));
     $this->assertNull(session('is_superadmin'));
 });
+
+test('superadmin can sync all live leads', function () {
+    $user = User::factory()->create();
+    $sheet = LeadSheet::create([
+        'user_id' => $user->id,
+        'name' => 'Sync Test Campaign',
+        'sheet_url' => 'https://docs.google.com/spreadsheets/d/1Hon6CooIpZEac7uS6kFAiyzPcrS18rmbq6ccWZbK6jg/edit?gid=0#gid=0',
+        'sheet_id' => '1Hon6CooIpZEac7uS6kFAiyzPcrS18rmbq6ccWZbK6jg',
+        'gid' => '0',
+        'total_leads_count' => 0,
+        'is_active' => true,
+    ]);
+
+    $response = $this
+        ->withSession(['is_superadmin' => true])
+        ->post(route('superadmin.sync-leads'));
+
+    $response->assertRedirect();
+    $response->assertSessionHas('success');
+});
