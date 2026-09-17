@@ -212,9 +212,14 @@ class GoogleSheetService
             $leads[] = $normalized;
         }
 
+        $totalCount = count($leads);
+        if ($sheet->exists && $sheet->total_leads_count !== $totalCount) {
+            $sheet->updateQuietly(['total_leads_count' => $totalCount]);
+        }
+
         return [
             'leads' => $leads,
-            'total' => count($leads),
+            'total' => $totalCount,
             'headers' => $headers,
         ];
     }

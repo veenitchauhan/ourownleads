@@ -36,4 +36,19 @@ Route::middleware(['auth'])->group(function () {
     Route::post('leads/star', [\App\Http\Controllers\LeadActionController::class, 'toggleStar'])->name('leads.star');
 });
 
+// Superadmin Portal Routes
+Route::prefix('superadmin')->name('superadmin.')->group(function () {
+    Route::get('login', [\App\Http\Controllers\Superadmin\SuperadminAuthController::class, 'showLogin'])->name('login');
+    Route::post('login', [\App\Http\Controllers\Superadmin\SuperadminAuthController::class, 'login'])->name('login.store');
+    Route::post('logout', [\App\Http\Controllers\Superadmin\SuperadminAuthController::class, 'logout'])->name('logout');
+
+    Route::middleware([\App\Http\Middleware\EnsureSuperadmin::class])->group(function () {
+        Route::get('/', [\App\Http\Controllers\Superadmin\SuperadminController::class, 'index'])->name('index');
+        Route::post('users/{user}/password', [\App\Http\Controllers\Superadmin\SuperadminController::class, 'setPassword'])->name('users.password');
+        Route::post('users/{user}/impersonate', [\App\Http\Controllers\Superadmin\SuperadminController::class, 'impersonate'])->name('users.impersonate');
+    });
+
+    Route::post('stop-impersonation', [\App\Http\Controllers\Superadmin\SuperadminController::class, 'stopImpersonation'])->name('stop-impersonation');
+});
+
 require __DIR__.'/settings.php';

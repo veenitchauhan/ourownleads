@@ -54,4 +54,12 @@ class User extends Authenticatable implements PasskeyUser
             'two_factor_confirmed_at' => 'datetime',
         ];
     }
+
+    /**
+     * Get the lead sheets belonging to this user.
+     */
+    public function leadSheets(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(LeadSheet::class);
+    }
 }

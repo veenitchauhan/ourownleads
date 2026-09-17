@@ -19,6 +19,7 @@ class LeadSheet extends Model
         'sheet_id',
         'gid',
         'refresh_interval',
+        'total_leads_count',
         'is_active',
         'column_mapping',
     ];
@@ -27,6 +28,7 @@ class LeadSheet extends Model
         'column_mapping' => 'array',
         'is_active' => 'boolean',
         'refresh_interval' => 'integer',
+        'total_leads_count' => 'integer',
     ];
 
     public function user(): BelongsTo
