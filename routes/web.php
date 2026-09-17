@@ -1,0 +1,39 @@
+<?php
+
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Teams\TeamInvitationController;
+use App\Http\Middleware\EnsureTeamMembership;
+use Illuminate\Support\Facades\Route;
+
+Route::inertia('/', 'welcome')->name('home');
+
+Route::get('dashboard', function () {
+    return redirect()->route('dashboard');
+})->middleware(['auth']);
+
+Route::prefix('{current_team}')
+    ->middleware(['auth', 'verified', EnsureTeamMembership::class])
+    ->group(function () {
+        Route::get('dashboard', DashboardController::class)->name('dashboard');
+    });
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('invitations/{invitation}/accept', [TeamInvitationController::class, 'accept'])->name('invitations.accept');
+    Route::delete('invitations/{invitation}', [TeamInvitationController::class, 'decline'])->name('invitations.decline');
+
+    // Live Leads & Polling API
+    Route::get('api/live-leads', [\App\Http\Controllers\LeadActionController::class, 'livePoll'])->name('leads.live');
+
+    // Google Sheets Management
+    Route::post('sheets', [\App\Http\Controllers\SheetController::class, 'store'])->name('sheets.store');
+    Route::post('sheets/test', [\App\Http\Controllers\SheetController::class, 'test'])->name('sheets.test');
+    Route::post('sheets/{sheet}/activate', [\App\Http\Controllers\SheetController::class, 'setActive'])->name('sheets.activate');
+    Route::delete('sheets/{sheet}', [\App\Http\Controllers\SheetController::class, 'destroy'])->name('sheets.destroy');
+
+    // Lead Actions (Status, Notes, Star)
+    Route::post('leads/status', [\App\Http\Controllers\LeadActionController::class, 'updateStatus'])->name('leads.status');
+    Route::post('leads/notes', [\App\Http\Controllers\LeadActionController::class, 'saveNotes'])->name('leads.notes');
+    Route::post('leads/star', [\App\Http\Controllers\LeadActionController::class, 'toggleStar'])->name('leads.star');
+});
+
+require __DIR__.'/settings.php';
