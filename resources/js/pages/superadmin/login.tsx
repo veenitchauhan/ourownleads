@@ -41,9 +41,6 @@ export default function SuperadminLogin({ configuredEmail, errors = {} }: Props)
                     <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
                         Superadmin Portal
                     </h1>
-                    <p className="text-xs sm:text-sm text-slate-400 mt-1.5 max-w-xs mx-auto">
-                        Restricted administrative access. Authenticate using the master key from your <code className="text-rose-400 bg-rose-950/60 px-1.5 py-0.5 rounded border border-rose-900/50">.env</code> file.
-                    </p>
                 </div>
 
                 {/* Login Card */}
