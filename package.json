@@ -12,8 +12,7 @@
     "start": "next start -H 127.0.0.1 -p 3100",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
-    "test": "node --experimental-strip-types --test tests/*.test.ts",
-    "sites:build": "vinext build"
+    "test": "node --experimental-strip-types --test tests/*.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

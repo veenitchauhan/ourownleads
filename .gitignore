@@ -48,3 +48,7 @@ next-env.d.ts
 *.tsbuildinfo
 
 !.env.example
+
+# Legacy preview-host configuration (not used on the VPS)
+/vite.config.ts
+/.openai/
