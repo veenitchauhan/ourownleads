@@ -5,7 +5,7 @@ import {beginSignup,completeSignup} from '@/lib/server/embedded-signup';
 import {compileColumns,type ImportColumn} from '@/lib/import-mapping';
 import {createHmac,timingSafeEqual} from 'node:crypto';
 import {all,one,run,id,now,transaction} from '@/lib/server/store';
-import {ApiError,user,publicProfile,csrf,body,required,register,limitAuth,checkPassword,loginSession,sessionCookie,logout} from '@/lib/server/auth';
+import {ApiError,user,publicProfile,csrf,body,required,register,limitAuth,checkPassword,passwordHash,loginSession,sessionCookie,logout} from '@/lib/server/auth';
 import {connection,encrypt,decrypt,meta,templates} from '@/lib/server/whatsapp';
 import {normalizePhone,stages,rowsToLeads,parseCSV,sheetExportURL,canFreeform,type Lead,type Knowledge} from '@/lib/crm';
 export const runtime='nodejs';
@@ -44,6 +44,24 @@ async function dispatch(req:Request,context:{params:Promise<{path:string[]}>}){
   await meta(`${wabaId}/subscribed_apps`,token,{method:'POST',body:'{}'});
   run("UPDATE connections SET status='connected',updatedAt=? WHERE userId=? AND phoneId=?",now(),target,phoneId);
   return json({ok:true});
+ }
+ if(path[0]==='admin'&&path[1]==='clients'&&path.length===4){
+  requireAdmin(req);
+  if(method!=='POST')throw new ApiError(405,'Method not allowed.');
+  const target=one<{id:string;email:string}>('SELECT id,email FROM users WHERE id=?',path[2]);
+  if(!target||isPlatformAdmin(target.id))throw new ApiError(404,'Client workspace not found.');
+  if(path[3]==='login'){
+   const token=transaction(()=>{const token=loginSession(target.id);run('INSERT INTO admin_client_events(id,clientId,action,createdAt) VALUES(?,?,?,?)',id(),target.id,'login',now());return token;});
+   return json({ok:true},200,{'Set-Cookie':sessionCookie(token)});
+  }
+  if(path[3]==='password'){
+   const d=await body(req),password=required(d.password,'Password',200);
+   if(password.length<8)throw new ApiError(400,'Use at least 8 characters for your password.');
+   const hashed=passwordHash(password);
+   transaction(()=>{run('UPDATE users SET password=? WHERE id=?',hashed,target.id);run('DELETE FROM sessions WHERE userId=?',target.id);run('DELETE FROM whatsapp_signup WHERE userId=?',target.id);run('DELETE FROM auth_attempts WHERE email=?',target.email);run('INSERT INTO admin_client_events(id,clientId,action,createdAt) VALUES(?,?,?,?)',id(),target.id,'set_password',now());});
+   return json({ok:true});
+  }
+  throw new ApiError(404,'This action is not available.');
  }
  if(route==='admin/clients'&&method==='GET'){requireAdmin(req);const clients=all<{id:string}>(`SELECT u.id,u.name,u.email,u.business,u.createdAt,(SELECT COUNT(*) FROM leads l WHERE l.userId=u.id) AS leadCount,(SELECT COUNT(*) FROM messages m WHERE m.userId=u.id) AS messageCount,(SELECT COUNT(*) FROM knowledge k WHERE k.userId=u.id) AS knowledgeCount,c.displayPhone,c.status AS connectionStatus FROM users u LEFT JOIN connections c ON c.userId=u.id WHERE u.id<>'platform-admin' ORDER BY u.createdAt DESC`).filter(u=>!isPlatformAdmin(u.id));return json({clients,setupReady:setupStatus().ready});}
  if(route==='auth'&&method==='GET'){try{return json({...(()=>{const u=user(req);return isPlatformAdmin(u.id)?{user:null,redirectTo:'/admin'}:{user:publicProfile(u)};})()});}catch{return json({user:null});}}

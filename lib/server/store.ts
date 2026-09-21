@@ -6,6 +6,7 @@ let db:DatabaseSync;
 export function database(){
  if(db)return db;const file=resolve(process.env.CRM_DB_PATH||'data/our-own-leads.sqlite');mkdirSync(dirname(file),{recursive:true,mode:0o700});db=new DatabaseSync(file);db.exec('PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;');
  db.exec(`CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY,name TEXT NOT NULL,email TEXT NOT NULL UNIQUE,password TEXT NOT NULL,business TEXT NOT NULL,brandColor TEXT NOT NULL DEFAULT '#087b66',logo TEXT NOT NULL DEFAULT '',supportEmail TEXT NOT NULL DEFAULT '',hours TEXT NOT NULL DEFAULT '',assistantName TEXT NOT NULL DEFAULT 'Your assistant',assistantTone TEXT NOT NULL DEFAULT 'Friendly and helpful',welcome TEXT NOT NULL DEFAULT 'Hello! How can we help you today?',assistantActive INTEGER NOT NULL DEFAULT 0,createdAt TEXT NOT NULL);
+ CREATE TABLE IF NOT EXISTS admin_client_events(id TEXT PRIMARY KEY,clientId TEXT NOT NULL REFERENCES users(id),action TEXT NOT NULL,createdAt TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS admin_sessions(token TEXT PRIMARY KEY,expires INTEGER NOT NULL,credentialHash TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS platform_settings(id TEXT PRIMARY KEY,value TEXT NOT NULL,updatedAt TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS whatsapp_signup(attempt TEXT PRIMARY KEY,userId TEXT NOT NULL REFERENCES users(id),sessionHash TEXT NOT NULL,expires INTEGER NOT NULL);
