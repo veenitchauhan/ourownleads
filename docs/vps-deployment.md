@@ -16,6 +16,8 @@ The script refuses dirty checkouts, pulls fast-forward only, builds before resta
 
 Create a consistent backup:
 
+The VPS also runs `ourownleads-backup.timer` daily at 02:30 UTC (with up to five minutes of delay). Backups remain on the VPS and do not protect against loss of the VPS itself.
+
 ```bash
 python3 /opt/our-own-leads/source/deploy/backup-vps.py
 ```

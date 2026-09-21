@@ -1,0 +1,8 @@
+[Unit]
+Description=Back up Our Own Leads database and credential configuration
+
+[Service]
+Type=oneshot
+User=root
+UMask=0077
+ExecStart=/usr/bin/python3 /opt/our-own-leads/source/deploy/backup-vps.py
