@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "OurOwnLeads | Your business, connected",
-  description: "A simple workspace for your WhatsApp conversations and business assistant.",
+  title: "Our Own Leads | Your business, connected",
+  description: "Our Own Leads brings lead management, WhatsApp conversations, and business knowledge into one simple workspace for growing businesses.",
   other: {
     "codex-preview": "development",
   },

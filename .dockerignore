@@ -1,0 +1,12 @@
+.git
+.env*
+node_modules
+.next
+.vinext
+data
+dist
+.codex
+.agents
+outputs
+work
+*.tsbuildinfo

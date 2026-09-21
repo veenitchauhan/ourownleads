@@ -1,0 +1,42 @@
+// Run against an isolated Next server; TEST_DB_PATH must be its CRM_DB_PATH.
+import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
+import {randomUUID} from 'node:crypto';
+const base=process.env.TEST_BASE_URL||'http://127.0.0.1:3101';
+async function req(path,method='GET',data,cookie){const r=await fetch(base+'/api/'+path,{method,headers:{Origin:base,...(cookie?{Cookie:cookie}:{}),...(data?{'Content-Type':'application/json'}:{})},body:data?JSON.stringify(data):undefined});return {status:r.status,data:await r.json(),cookie:r.headers.get('set-cookie')?.split(';')[0]};}
+const email=`onboarding-${randomUUID()}@example.invalid`,password=randomUUID();
+assert.equal((await req('platform/whatsapp')).status,401);
+const a=await req('auth/register','POST',{email,password,name:'Onboarding Test',business:'Test'});assert.equal(a.status,201);
+const cookie=a.cookie;
+assert.equal((await req('platform/whatsapp','GET',undefined,cookie)).status,401);
+assert.equal((await req('platform/whatsapp','POST',{enabled:true},cookie)).status,401);
+assert.equal((await req('whatsapp','POST',{token:'fake'},cookie)).status,403);
+assert.deepEqual((await req('whatsapp/signup/config','GET',undefined,cookie)).data,{ready:false});
+assert.equal((await req('whatsapp/signup/start','POST',{},cookie)).status,503);
+assert.equal((await req('whatsapp/signup/complete','POST',{attempt:'fake'},cookie)).status,503);
+const w=(await req('workspace','GET',undefined,cookie)).data;
+await req('profile','PATCH',{...w.profile,isPlatformAdmin:true},cookie);
+assert.equal((await req('workspace','GET',undefined,cookie)).data.profile.isPlatformAdmin,false);
+const admin=await req('admin/login','POST',{username:'admin',password:process.env.TEST_ADMIN_PASSWORD});assert.equal(admin.status,200);
+assert.equal((await req('platform/whatsapp','GET',undefined,admin.cookie)).status,200);
+assert.equal((await req('admin/clients','GET',undefined,cookie)).status,401);
+assert.equal((await req('workspace','GET',undefined,admin.cookie)).status,401);
+assert.equal((await req('admin/session','GET',undefined,cookie)).data.authenticated,false);
+assert.equal((await req('admin/session','GET',undefined,admin.cookie)).data.authenticated,true);
+const clients=(await req('admin/clients','GET',undefined,admin.cookie)).data.clients;
+assert.ok(clients.some(c=>c.email===email));assert.ok(!clients.some(c=>c.email==='admin'));
+assert.ok(clients.every(c=>!('password' in c)&&!('token' in c)));
+assert.equal((await req('auth/login','POST',{email:'admin',password:process.env.TEST_ADMIN_PASSWORD})).status,403);
+for(const page of ['/admin','/admin/settings'])assert.equal((await fetch(base+page)).status,200);
+
+const settings={appId:'123',configId:'456',appSecret:'test-secret-only',verifyToken:'test-verification-only',enabled:false};
+assert.equal((await req('platform/whatsapp','POST',settings,admin.cookie)).status,200);
+const read=await req('platform/whatsapp','GET',undefined,admin.cookie);assert.equal(read.data.hasAppSecret,true);assert.equal(read.data.hasVerifyToken,true);assert.ok(!JSON.stringify(read.data).includes('test-secret-only'));
+await req('platform/whatsapp','POST',{...settings,appSecret:'',verifyToken:''},admin.cookie);
+const db=new DatabaseSync(process.env.TEST_DB_PATH);assert.ok(!db.prepare("SELECT value FROM platform_settings WHERE id='meta'").get().value.includes('test-secret-only'));db.close();
+assert.equal((await req('platform/whatsapp','GET',undefined,admin.cookie)).data.hasAppSecret,true);
+assert.deepEqual((await req('whatsapp/signup/config','GET',undefined,cookie)).data,{ready:false});
+assert.equal((await req('admin/logout','POST',{},admin.cookie)).status,200);
+assert.equal((await req('admin/clients','GET',undefined,admin.cookie)).status,401);
+assert.equal((await req('workspace','GET',undefined,cookie)).status,200);
+console.log('PASS: separate admin sessions, client cards, independent logout, direct admin routes, admin authorization, customer isolation, role escalation rejection, secret redaction/encryption/preservation, unconfigured signup guards. No Meta requests sent.');
