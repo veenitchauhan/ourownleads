@@ -2,10 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
 <key>Label</key><string>com.ourownleads.portal</string>
-<key>ProgramArguments</key><array><string>/opt/homebrew/bin/node</string><string>/Users/veenit/Sites/whatsapp-chatbot/node_modules/next/dist/bin/next</string><string>start</string><string>-H</string><string>127.0.0.1</string><string>-p</string><string>3100</string></array>
-<key>WorkingDirectory</key><string>/Users/veenit/Sites/whatsapp-chatbot</string>
+<key>ProgramArguments</key><array><string>/opt/homebrew/bin/node</string><string>/Users/veenit/Sites/ourownleads/node_modules/next/dist/bin/next</string><string>start</string><string>-H</string><string>127.0.0.1</string><string>-p</string><string>3100</string></array>
+<key>WorkingDirectory</key><string>/Users/veenit/Sites/ourownleads</string>
 <key>RunAtLoad</key><true/><key>KeepAlive</key><true/>
 <key>EnvironmentVariables</key><dict><key>NODE_ENV</key><string>production</string><key>PATH</key><string>/opt/homebrew/bin:/usr/bin:/bin</string></dict>
-<key>StandardOutPath</key><string>/Users/veenit/Sites/whatsapp-chatbot/data/server.log</string>
-<key>StandardErrorPath</key><string>/Users/veenit/Sites/whatsapp-chatbot/data/server-error.log</string>
+<key>StandardOutPath</key><string>/Users/veenit/Sites/ourownleads/data/server.log</string>
+<key>StandardErrorPath</key><string>/Users/veenit/Sites/ourownleads/data/server-error.log</string>
 </dict></plist>

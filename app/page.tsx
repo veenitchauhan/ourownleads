@@ -1,2 +1,2 @@
-import Portal from '@/components/portal';
-export default function HomePage() { return <Portal />; }
+import {Landing} from '@/components/landing';
+export default function HomePage() { return <Landing />; }

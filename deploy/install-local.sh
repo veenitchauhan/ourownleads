@@ -1,6 +1,6 @@
 #!/bin/sh
 set -eu
-cd /Users/veenit/Sites/whatsapp-chatbot
+cd /Users/veenit/Sites/ourownleads
 config=/opt/homebrew/etc/httpd/extra/ourownleads.test.conf
 backup="$config.before-our-own-leads-crm"
 if [ ! -e "$backup" ]; then cp "$config" "$backup"; fi
